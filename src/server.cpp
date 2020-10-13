@@ -172,37 +172,12 @@ void Server::processClientMessage(int clientDescriptor, std::string clientMessag
     }
     std::string command = getCommandFromClientMessage(clientMessage);
     std::cout<<"COMANDO: "<<command<<std::endl;
-
     if (command == "USER"){
-       int position = clientMessage.find(" ");
-       std::string username = clientMessage.substr(position+1, clientMessage.length());
-       client.setUsername(username);
-       updateClient(client);
-       sendMessageToClient(clientDescriptor, "+Ok. User registered");
+        userHandler(clientMessage, client);
     }
-
     else if (command == "PASSW"){
-        // Check if user is logged and the save database for changes
-        int position = clientMessage.find(" ");
-        std::string password = clientMessage.substr(position+1, clientMessage.length());
-        client.setPassword(password);
-        updateClient(client);
-        // Check if user is in database otherwise must be added
-        if (_database->checkIfClientExists(client.getUsername())){
-            if (_database->checkIfUserPasswordIsCorrect(client.getUsername(),client.getPassword())){
-                sendMessageToClient(client.getDescriptor(), "+Ok. User authenticated");
-                client.setStatus(1);
-            }
-            else{
-                sendMessageToClient(client.getDescriptor(), "-ERR. User password not valid");
-            }
-        }
-        else{
-            _database->addClient(client);
-            sendMessageToClient(client.getDescriptor(), "+Ok. User authenticated");
-        }
+        passwdHandler(clientMessage, client);
     }
-
     else {
         sendMessageToClient(clientDescriptor, "-ERR. Invalid command");
     }
