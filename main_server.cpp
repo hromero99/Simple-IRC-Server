@@ -1,7 +1,7 @@
 #include "server.hpp"
 
 int main(){
-    Server server = Server(10);
+    Server server = Server("/home/hromero/CLionProjects/simple-irc/cmake-build-debug/bin/users-database.txt");
     // Waiting for requests
     server.bindServer();
     while(1){
