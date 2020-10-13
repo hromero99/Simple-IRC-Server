@@ -5,15 +5,18 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <netdb.h>
-#include <signal.h>
+#include <csignal>
 #include <unistd.h>
-#include <time.h>
+#include <ctime>
 #include <arpa/inet.h>
 #include <vector>
+#include <string.h>
 #include "channel.hpp"
 #include "server_client.hpp"
 #include "server_client.hpp"
+#include "database.hpp"
 #define MAX_BUFFER_LENGTH 255
+#define MAX_USERS 100
 
 class Server{
     private:
@@ -28,21 +31,23 @@ class Server{
         std::vector<ServerClient> _clients;
         std::string _serverMessages;
         std::vector<Channel> _channels;
+        Database* _database;
 
     public:
-        Server(int maxClients=1);
+        Server(std::string user_file);
         void bindServer();
         void setAuxFds();
         int getClientsOutput();
         void lookForConnectionSocket();
         void shutdown();
         void notifyAllClients(std::string message);
-        void proccessClientMessage(int clientDescriptor);
+        void processClientMessage(int clientDescriptor, std::string clientMessage);
         bool addNewChannel(std::string newChannelName);
         bool checkIfChannelExists(std::string channelName);
         void sendMessageToClient(int socket, std::string message);
         bool addNewClient(ServerClient newClient);
         ServerClient getClientFromList(int clientSocket);
+        void updateClient(ServerClient newClient);
 
     std::string getCommandFromClientMessage(std::string basicString);
 };
