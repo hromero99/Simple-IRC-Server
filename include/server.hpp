@@ -49,6 +49,9 @@ class Server{
         ServerClient getClientFromList(int clientSocket);
         void updateClient(ServerClient newClient);
 
-    std::string getCommandFromClientMessage(std::string basicString);
+        // handlers
+        void passwdHandler(std::string clientMessage, ServerClient client);
+        void userHandler(std::string clientMessage, ServerClient client);
+        std::string getCommandFromClientMessage(std::string basicString);
 };
 #endif
