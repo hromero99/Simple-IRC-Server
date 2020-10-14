@@ -22,6 +22,8 @@ Server::Server(std::string user_file){
     // Create the main channel for default
     _database = new Database(user_file);
     _database->loadDatabase();
+    Channel mainChannel("MAIN");
+    _channels.push_back(mainChannel);
 }
 
 void Server::setAuxFds(){
@@ -76,6 +78,9 @@ void Server::lookForConnectionSocket(){
                 else {
                     //Check if number of clients is valid
                     if (_Nclients < 255) {
+                        ServerClient client(new_socket);
+                        _clients.push_back(client);
+                        addUserToChannel(client, "MAIN");
                         _clientsDescriptors[_Nclients] = new_socket;
                         // Create new Client object and associate with new socket
                         //_clients.emplace_back(ServerClient(new_socket));
@@ -84,7 +89,7 @@ void Server::lookForConnectionSocket(){
                         sendMessageToClient(new_socket, "+0k. User connected\n");
 
                         // Send to new client Welcome message
-                        // notifyAllClients("Nuevo cliente en el servidor\n");
+                        notifyAllClients("Nuevo cliente en el servidor\n");
                     }
                         // if there are a lot of clients, notify to new host
                     else {
@@ -184,6 +189,9 @@ void Server::processClientMessage(int clientDescriptor, std::string clientMessag
     else if (command == "NEW"){
         addChannelHandler(clientMessage,client);
     }
+    else if (command == "LIST-CHATS"){
+        listChatsHandler(client);
+    }
     else {
         sendMessageToClient(clientDescriptor, "-ERR. Invalid command");
     }
@@ -222,3 +230,13 @@ bool Server::moveUserToOtherChannel(ServerClient client, std::string oldChannel,
     return false;
 }
 
+bool Server::addUserToChannel(ServerClient client, std::string channel) {
+    std::vector<Channel>::iterator it = _channels.begin();
+    for(; it != _channels.end(); it++){
+        if (it->getChannelName() == channel){
+            it->addNewClient(client);
+            return true;
+        }
+    }
+    return false;
+}
