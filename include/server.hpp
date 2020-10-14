@@ -52,6 +52,7 @@ class Server{
         // handlers
         void passwdHandler(std::string clientMessage, ServerClient client);
         void userHandler(std::string clientMessage, ServerClient client);
+        void listUsersHandler(ServerClient client);
         std::string getCommandFromClientMessage(std::string basicString);
 };
 #endif

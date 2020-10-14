@@ -178,6 +178,12 @@ void Server::processClientMessage(int clientDescriptor, std::string clientMessag
     else if (command == "PASSW"){
         passwdHandler(clientMessage, client);
     }
+    else if (command == "LIST-USERS"){
+        listUsersHandler(client);
+    }
+    else if (command == "NEW"){
+        addChannelHandler(clientMessage,client);
+    }
     else {
         sendMessageToClient(clientDescriptor, "-ERR. Invalid command");
     }
