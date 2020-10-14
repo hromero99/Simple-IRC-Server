@@ -190,3 +190,35 @@ void Server::processClientMessage(int clientDescriptor, std::string clientMessag
 }
 
 
+bool Server::checkIfChannelExistsInServer(std::string channelName) {
+    std::vector<Channel>::iterator it = _channels.begin();
+    for (; it != _channels.end(); it++){
+        if (it -> getChannelName() == channelName){
+            return true;
+        }
+    }
+    return false;
+}
+
+
+bool Server::moveUserToOtherChannel(ServerClient client, std::string oldChannel, std::string newChannel){
+    if ( checkIfChannelExistsInServer(oldChannel) && checkIfChannelExistsInServer(newChannel)){
+        std::vector<Channel>::iterator it = _channels.begin();
+        for(; it != _channels.end();it++){
+            if (it ->getChannelName() == oldChannel){
+                //Remove client from old channel
+                // EX: Join channel pipo, then remove to MAIN channel and then add to PIPO channel
+                it->removeClient(client);
+            }
+            if (it ->getChannelName() == newChannel){
+               it->addNewClient(client);
+            }
+        }
+        return true;
+    }
+    else{
+        sendMessageToClient(client.getDescriptor(), "-Err. There's a channel who does not exists\n");
+    }
+    return false;
+}
+

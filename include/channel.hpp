@@ -2,14 +2,17 @@
 #define _CHANNEL_H_
 #include <iostream>
 #include <vector>
+#include "server_client.hpp"
+#include<bits/stdc++.h>
 
 class Channel{
   private:
     std::string _name;
-    std::vector<int> _clients;
+    std::list<ServerClient> _clients;
   public:
     Channel(std::string channelName);
-    bool addNewClient(int clientSocketDescriptor);
+    bool addNewClient(ServerClient client);
+    bool removeClient(ServerClient client);
     inline std::string getChannelName()const {return _name;};
 };
 
