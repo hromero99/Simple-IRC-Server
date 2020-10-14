@@ -48,6 +48,7 @@ class Server{
         bool addNewClient(ServerClient newClient);
         ServerClient getClientFromList(int clientSocket);
         void updateClient(ServerClient newClient);
+        bool addUserToChannel(ServerClient client, std::string channel);
         bool moveUserToOtherChannel(ServerClient client, std::string oldChannel, std::string newChannel);
         bool checkIfChannelExistsInServer(std::string channelName);
         // handlers
@@ -55,6 +56,7 @@ class Server{
         void userHandler(std::string clientMessage, ServerClient client);
         void listUsersHandler(ServerClient client);
         void addChannelHandler(std::string clientMessage, ServerClient client);
+        void listChatsHandler(ServerClient client);
         std::string getCommandFromClientMessage(std::string basicString);
 };
 #endif
