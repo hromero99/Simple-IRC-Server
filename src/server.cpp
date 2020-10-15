@@ -78,12 +78,11 @@ void Server::lookForConnectionSocket(){
                 else {
                     //Check if number of clients is valid
                     if (_Nclients < 255) {
+                        //Create new client object and add to ServerClient vector
                         ServerClient client(new_socket);
                         _clients.push_back(client);
                         addUserToChannel(client, "MAIN");
                         _clientsDescriptors[_Nclients] = new_socket;
-                        // Create new Client object and associate with new socket
-                        //_clients.emplace_back(ServerClient(new_socket));
                         _Nclients++;
                         FD_SET(new_socket, &_readfds);
                         sendMessageToClient(new_socket, "+0k. User connected\n");
@@ -234,7 +233,18 @@ bool Server::addUserToChannel(ServerClient client, std::string channel) {
     std::vector<Channel>::iterator it = _channels.begin();
     for(; it != _channels.end(); it++){
         if (it->getChannelName() == channel){
+            client.setChannel(it->getChannelName());
             it->addNewClient(client);
+            return true;
+        }
+    }
+    return false;
+}
+
+bool Server::checkIfUserIsOwner(std::string username) {
+    std::vector<Channel>::iterator it = _channels.begin();
+    for(; it != _channels.end(); it++){
+        if (username == it->getOwner()){
             return true;
         }
     }

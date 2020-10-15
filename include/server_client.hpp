@@ -9,6 +9,7 @@ class ServerClient{
         std::string _username;
         std::string _password;
         int _status;
+        std::string _channel;
 
     public:
         ServerClient(int serverSocket);
@@ -21,7 +22,8 @@ class ServerClient{
         inline int getStatus() const{return _status;}
         inline void setDescriptor(int descriptor) {_serverSocket = descriptor;}
         inline void setStatus(int newStatus){_status = newStatus;};
-
+        inline void setChannel(std::string channelName){_channel = channelName;};
+        inline std::string getChannel(){return _channel;};
 };
 
 #endif

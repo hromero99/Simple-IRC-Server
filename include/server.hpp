@@ -17,6 +17,7 @@
 #include "database.hpp"
 #define MAX_BUFFER_LENGTH 255
 #define MAX_USERS 100
+#define MAX_CHANNELS 10
 
 class Server{
     private:
@@ -58,5 +59,6 @@ class Server{
         void addChannelHandler(std::string clientMessage, ServerClient client);
         void listChatsHandler(ServerClient client);
         std::string getCommandFromClientMessage(std::string basicString);
+        bool checkIfUserIsOwner(std::string username);
 };
 #endif
