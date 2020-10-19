@@ -80,8 +80,8 @@ void Server::lookForConnectionSocket(){
                     if (_Nclients < 255) {
                         //Create new client object and add to ServerClient vector
                         ServerClient client(new_socket);
+                        addUserToChannel(&client, "MAIN");
                         _clients.push_back(client);
-                        addUserToChannel(client, "MAIN");
                         _clientsDescriptors[_Nclients] = new_socket;
                         _Nclients++;
                         FD_SET(new_socket, &_readfds);
@@ -99,7 +99,7 @@ void Server::lookForConnectionSocket(){
                 }
             }
             else{
-                int received;
+                int received=0;
                 std::string clientMessage;
                 char clientBuffer[MAX_BUFFER_LENGTH];
                 bzero(clientBuffer, MAX_BUFFER_LENGTH);
@@ -107,8 +107,18 @@ void Server::lookForConnectionSocket(){
                 if (received < 0){
                     std::cout<<"Error recibiendo mensajes del cliente"<<std::endl;
                 }
-                clientMessage = std::string(clientBuffer);
-                processClientMessage(clientSocket, clientMessage);
+                else if(received == 0){
+                    //The user give Ctrl + c
+                    for(std::vector<ServerClient>::iterator it = _clients.begin(); it != _clients.end(); it++){
+                        if ( it->getDescriptor() == clientSocket){
+                            exitClient(*it);
+                        }
+                    }
+                }
+                else{
+                    processClientMessage(clientSocket, std::string(clientBuffer));
+                }
+
             }
         }
         // If the client has a previous connection the socket must be in a FD_SET and don't match with _socket descriptor
@@ -128,14 +138,13 @@ void Server::notifyAllClients(std::string message){
     }
 }
 
-ServerClient Server::getClientFromList(int clientSocket){
+ServerClient* Server::getClientFromList(int clientSocket){
     ServerClient client = ServerClient(-1);
     for (std::vector<ServerClient>::iterator it = _clients.begin(); it != _clients.end(); it++){
         if ( it->getDescriptor() == clientSocket ){
-            client = *it;
+            return &*it;
         }
     }
-    return client;
 }
 
 bool Server::checkIfChannelExists(std::string channelName){
@@ -168,28 +177,40 @@ void Server::updateClient(ServerClient newClient){
     }
 }
 void Server::processClientMessage(int clientDescriptor, std::string clientMessage){
-    ServerClient client = getClientFromList(clientDescriptor);
+    ServerClient*  client = getClientFromList(clientDescriptor);
     // Check if client descriptor is -1 because is that does not exists and assigns new descriptor and add to list
-    if (client.getDescriptor() == -1){
-        client.setDescriptor(clientDescriptor);
-        _clients.emplace_back(client);
+    if (client->getDescriptor() == -1){
+        client->setDescriptor(clientDescriptor);
+        _clients.emplace_back(*client);
     }
     std::string command = getCommandFromClientMessage(clientMessage);
     std::cout<<"COMANDO: "<<command<<std::endl;
     if (command == "USER"){
-        userHandler(clientMessage, client);
+        userHandler(clientMessage, *client);
     }
     else if (command == "PASSW"){
-        passwdHandler(clientMessage, client);
+        passwdHandler(clientMessage, *client);
     }
     else if (command == "LIST-USERS"){
-        listUsersHandler(client);
+        listUsersHandler(*client);
     }
     else if (command == "NEW"){
         addChannelHandler(clientMessage,client);
     }
     else if (command == "LIST-CHATS"){
-        listChatsHandler(client);
+        listChatsHandler(*client);
+    }
+    else if( command == "ADD"){
+        addClientToChannelHandler(*client,clientMessage);
+    }
+    else if (command == "SEND"){
+        sendMessageToChannelHandler(*client, clientMessage);
+    }
+    else if (command == "DROP"){
+        dropUserFromChannelHandler(*client,clientMessage);
+    }
+    else if (command == "salir"){
+        exitClient(*client);
     }
     else {
         sendMessageToClient(clientDescriptor, "-ERR. Invalid command");
@@ -208,33 +229,35 @@ bool Server::checkIfChannelExistsInServer(std::string channelName) {
 }
 
 
-bool Server::moveUserToOtherChannel(ServerClient client, std::string oldChannel, std::string newChannel){
+bool Server::moveUserToOtherChannel(ServerClient* client, std::string oldChannel, std::string newChannel){
     if ( checkIfChannelExistsInServer(oldChannel) && checkIfChannelExistsInServer(newChannel)){
         std::vector<Channel>::iterator it = _channels.begin();
         for(; it != _channels.end();it++){
             if (it ->getChannelName() == oldChannel){
                 //Remove client from old channel
                 // EX: Join channel pipo, then remove to MAIN channel and then add to PIPO channel
-                it->removeClient(client);
+                it->removeClient(*client);
             }
             if (it ->getChannelName() == newChannel){
-               it->addNewClient(client);
+               it->addNewClient(*client);
             }
         }
+        sendMessageToClient(client->getDescriptor(), "+Ok. Client move to Channel "+ newChannel);
+        client->setChannel(newChannel);
         return true;
     }
     else{
-        sendMessageToClient(client.getDescriptor(), "-Err. There's a channel who does not exists\n");
+        sendMessageToClient(client->getDescriptor(), "-Err. There's a channel who does not exists\n");
     }
     return false;
 }
 
-bool Server::addUserToChannel(ServerClient client, std::string channel) {
+bool Server::addUserToChannel(ServerClient* client, std::string channel) {
     std::vector<Channel>::iterator it = _channels.begin();
     for(; it != _channels.end(); it++){
         if (it->getChannelName() == channel){
-            client.setChannel(it->getChannelName());
-            it->addNewClient(client);
+            client->setChannel(it->getChannelName());
+            it->addNewClient(*client);
             return true;
         }
     }

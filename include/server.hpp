@@ -47,18 +47,22 @@ class Server{
         bool checkIfChannelExists(std::string channelName);
         void sendMessageToClient(int socket, std::string message);
         bool addNewClient(ServerClient newClient);
-        ServerClient getClientFromList(int clientSocket);
+        ServerClient* getClientFromList(int clientSocket);
         void updateClient(ServerClient newClient);
-        bool addUserToChannel(ServerClient client, std::string channel);
-        bool moveUserToOtherChannel(ServerClient client, std::string oldChannel, std::string newChannel);
+        bool addUserToChannel(ServerClient* client, std::string channel);
+        bool moveUserToOtherChannel(ServerClient* client, std::string oldChannel, std::string newChannel);
         bool checkIfChannelExistsInServer(std::string channelName);
         // handlers
         void passwdHandler(std::string clientMessage, ServerClient client);
         void userHandler(std::string clientMessage, ServerClient client);
         void listUsersHandler(ServerClient client);
-        void addChannelHandler(std::string clientMessage, ServerClient client);
+        void addChannelHandler(std::string clientMessage, ServerClient* client);
         void listChatsHandler(ServerClient client);
+        void addClientToChannelHandler(ServerClient client, std::string clientMessage);
+        void sendMessageToChannelHandler(ServerClient client, std::string clientMessage);
+        void dropUserFromChannelHandler(ServerClient client, const std::string &clientMessage);
         std::string getCommandFromClientMessage(std::string basicString);
         bool checkIfUserIsOwner(std::string username);
+        void exitClient (ServerClient clientToExit);
 };
 #endif
