@@ -23,11 +23,11 @@ void Database::loadDatabase() {
 }
 
 void Database::saveDatabase(){
-    std::ofstream file(_username_file);
+    std::ofstream file(_username_file, std::ofstream::out);
     std::string outputLine;
     for (std::vector<ServerClient>::iterator it = _clients.begin(); it != _clients.end(); it++ ){
-        outputLine = it->getUsername() + ";" + it->getPassword();
-        std::cout<<outputLine<<std::endl;
+        outputLine = it->getUsername() + ";" + it->getPassword()+"\n";
+        std::cout<<outputLine;
         file<<outputLine;
     }
     file.close();
