@@ -17,7 +17,9 @@ int main(){
         std::cout<<"Server Message -> "<<serverMessage<<std::endl;
         std::cout<<":> ";
         getline(std::cin,keyboardInput);
-        client.sendMessage(keyboardInput);
+        if (keyboardInput != "\n"){
+            client.sendMessage(keyboardInput);
+        }
     } while(exitLoop == 0);
     return 0;
 }

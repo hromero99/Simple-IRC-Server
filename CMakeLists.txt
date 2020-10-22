@@ -11,6 +11,11 @@ set (HANDLERS
         src/handlers/listUsers_handler.cpp
         src/handlers/add_handler.cpp
         src/handlers/listChats_handler.cpp
+        src/handlers/add_user_handlers.cpp
+        src/handlers/send_handler.cpp
+        src/handlers/drop_handler.cpp
+        src/handlers/exit_handler.cpp
+        src/handlers/quit_command_hander.cpp
         )
 add_executable(irc_server main_server.cpp src/server.cpp src/channel.cpp src/server_client.cpp src/database.cpp ${HANDLERS})
 add_executable(irc_client main_client.cpp src/client.cpp)

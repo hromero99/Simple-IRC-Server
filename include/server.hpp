@@ -63,6 +63,7 @@ class Server{
         void dropUserFromChannelHandler(ServerClient client, const std::string &clientMessage);
         std::string getCommandFromClientMessage(std::string basicString);
         bool checkIfUserIsOwner(std::string username);
-        void exitClient (ServerClient clientToExit);
+        void exitClient (int clientDescriptor);
+        void quitCommandHandler(ServerClient* client);
 };
 #endif

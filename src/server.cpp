@@ -109,11 +109,7 @@ void Server::lookForConnectionSocket(){
                 }
                 else if(received == 0){
                     //The user give Ctrl + c
-                    for(std::vector<ServerClient>::iterator it = _clients.begin(); it != _clients.end(); it++){
-                        if ( it->getDescriptor() == clientSocket){
-                            exitClient(*it);
-                        }
-                    }
+                    exitClient(clientSocket);
                 }
                 else{
                     processClientMessage(clientSocket, std::string(clientBuffer));
@@ -131,8 +127,9 @@ void Server::shutdown(){
 }
 
 void Server::notifyAllClients(std::string message){
-    for (int i=0;i<_Nclients;i++){
-        if (send(_clientsDescriptors[i], message.c_str(), message.length(), 0 ) < 0){
+    std::vector<ServerClient>::iterator it= _clients.begin();
+    for (; it != _clients.end(); it++){
+        if (send(it->getDescriptor(), message.c_str(), message.length(), 0 ) < 0){
             std::cout<<"Error sending message to client "<<errno<<std::endl;
         }
     }
@@ -210,7 +207,10 @@ void Server::processClientMessage(int clientDescriptor, std::string clientMessag
         dropUserFromChannelHandler(*client,clientMessage);
     }
     else if (command == "salir"){
-        exitClient(*client);
+        exitClient(client->getDescriptor());
+    }
+    else if (command == "QUIT"){
+        quitCommandHandler(client);
     }
     else {
         sendMessageToClient(clientDescriptor, "-ERR. Invalid command");

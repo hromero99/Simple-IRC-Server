@@ -1,19 +1,21 @@
 #include "server.hpp"
 
-void Server::exitClient(ServerClient clientToExit) {
+void Server::exitClient(int clientDescriptor) {
     std::vector<ServerClient>::iterator it = _clients.begin();
-    fd_set * readfds = &_readfds;
     // Delete client from list
     for (; it != _clients.end(); it++){
-        if (it->getUsername() == clientToExit.getUsername()){
-            //Delete from FD_SETS
-            FD_CLR(clientToExit.getDescriptor(), readfds);
-            //Decrement Nclients
-            _Nclients--;
+        if (it->getDescriptor() == clientDescriptor){
+            sendMessageToClient(clientDescriptor, "+Ok. Desconexión completada\n");
             break;
         }
     }
-    _clients.erase(it);
-    notifyAllClients("Desconected user " + clientToExit.getUsername() + "\n");
+    if (clientDescriptor != -1){
+        //Delete from FD_SETS
+        FD_CLR(clientDescriptor, &_readfds);
+        //Decrement Nclients
+        _Nclients--;
+        _clients.erase(it);
+        notifyAllClients("+Ok. Usuario " + it->getUsername() + "desconectado"+"\n");
+    }
 
 }
